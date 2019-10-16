@@ -1,0 +1,11 @@
+C:\Users\mudale\source\repos\ticTacToe2\ticTacToe2\obj\Debug\ticTacToe2.csprojAssemblyReference.cache
+C:\Users\mudale\source\repos\ticTacToe2\ticTacToe2\bin\Debug\ticTacToe2.exe.config
+C:\Users\mudale\source\repos\ticTacToe2\ticTacToe2\bin\Debug\ticTacToe2.exe
+C:\Users\mudale\source\repos\ticTacToe2\ticTacToe2\bin\Debug\ticTacToe2.pdb
+C:\Users\mudale\source\repos\ticTacToe2\ticTacToe2\obj\Debug\ticTacToe2.exe
+C:\Users\mudale\source\repos\ticTacToe2\ticTacToe2\obj\Debug\ticTacToe2.pdb
+C:\Users\mudale\Desktop\ticTacToe2\ticTacToe2\bin\Debug\ticTacToe2.exe.config
+C:\Users\mudale\Desktop\ticTacToe2\ticTacToe2\bin\Debug\ticTacToe2.exe
+C:\Users\mudale\Desktop\ticTacToe2\ticTacToe2\bin\Debug\ticTacToe2.pdb
+C:\Users\mudale\Desktop\ticTacToe2\ticTacToe2\obj\Debug\ticTacToe2.exe
+C:\Users\mudale\Desktop\ticTacToe2\ticTacToe2\obj\Debug\ticTacToe2.pdb
