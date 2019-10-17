@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 
 namespace ticTacToe2 {
     class Program {
+        const int EMPTYSYMBOL = 0;
+        const int EX = 1;
+        const int IGOL = 2;
         static int BOARD_SIZE = 4;
-        static string[][] BOARD;
+        static int[][] BOARD;
         static int STRAIGHT = 3;
-        static string USERSYMBOL = "";
-        static string COMPUTERSYMBOL = "";
+        static int USERSYMBOL = 1;
+        static int COMPUTERSYMBOL = 2;
         static int MINMAXCOUNTER = 0;
         static int BIGGESTDEPTH = 0;
         static int MAXDEPTH = 11;
@@ -48,10 +51,17 @@ namespace ticTacToe2 {
                 for (var i = 0; i < BOARD_SIZE; i++) {
                     Console.WriteLine();
                     for (var j = 0; j < BOARD_SIZE; j++) {
-                        if (j < BOARD_SIZE - 1)
-                            Console.Write(" " + BOARD[i][j] + " |");
+                        var cell = "";
+                        if (BOARD[i][j] == EMPTYSYMBOL)
+                            cell = " ";
+                        else if (BOARD[i][j] == EX)
+                            cell = "X";
                         else
-                            Console.Write(" " + BOARD[i][j] + " ");
+                            cell = "O";
+                        if (j < BOARD_SIZE - 1)
+                            Console.Write(" " + cell + " |");
+                        else
+                            Console.Write(" " + cell + " ");
 
                     }
                     Console.WriteLine();
@@ -83,12 +93,12 @@ namespace ticTacToe2 {
             }
 
             private void MakeNewBoard() {
-                BOARD = new string[BOARD_SIZE][];
+                BOARD = new int[BOARD_SIZE][];
                 for (var i = 0; i < BOARD.Length; i++)
-                    BOARD[i] = new string[BOARD_SIZE];
+                    BOARD[i] = new int[BOARD_SIZE];
                 for (var i = 0; i < BOARD_SIZE; i++) {
                     for (var j = 0; j < BOARD_SIZE; j++) {
-                        BOARD[i][j] = " ";
+                        BOARD[i][j] = 0;
                     }
                 }
             }
@@ -97,7 +107,7 @@ namespace ticTacToe2 {
                 MakeNewBoard();
                 ENDGAME = false;
                 if (user_first) {
-                    USERSYMBOL = "X"; COMPUTERSYMBOL = "O";
+                    USERSYMBOL = EX; COMPUTERSYMBOL = IGOL;
                     while (!ENDGAME) {
                         handleUser(ref input);
                         if (!ENDGAME)
@@ -105,7 +115,7 @@ namespace ticTacToe2 {
                     }
                 }
                 else {
-                    USERSYMBOL = "O"; COMPUTERSYMBOL = "X";
+                    USERSYMBOL = IGOL; COMPUTERSYMBOL = EX;
                     while (!ENDGAME) {
                         handleComputer();
                         if (!ENDGAME)
@@ -117,18 +127,18 @@ namespace ticTacToe2 {
             private bool BoardFull() {
                 for (var i = 0; i < BOARD.Length; i++)
                     for (var j = 0; j < BOARD[i].Length; j++)
-                        if (BOARD[i][j] == " ")
+                        if (BOARD[i][j] == EMPTYSYMBOL)
                             return false;
                 return true;
             }
 
-            private void EndGame(string XorOorDraw) {
+            private void EndGame(int XorOorDraw) {
                 Graphic.PrintBoard();
                 if (XorOorDraw == USERSYMBOL)
                     Console.WriteLine("OH U BRAVE HERO!! U WON!!!! CONGRAT!!!");
                 else if (XorOorDraw == COMPUTERSYMBOL)
                     Console.WriteLine("OH U POOR BASTARD!!! BETTER LUCK NEXT TIME!!!");
-                else if (XorOorDraw == "draw")
+                else if (XorOorDraw == 3)
                     Console.WriteLine("JESUS! WHO COULD ANTICIPATE IT???!! DRAW!");
                 Graphic.PrintBoard();
                 ENDGAME = true;
@@ -141,8 +151,8 @@ namespace ticTacToe2 {
                 var user_input = Console.ReadLine();
                 if (user_input.Length == 3 &&
                     int.TryParse(user_input[0].ToString(), out int y) && int.TryParse(user_input[2].ToString(), out int x)
-                   && (x >= 0 && y >= 0 && x < BOARD_SIZE && y < BOARD_SIZE) && BOARD[x][y] == " ")
-                    BOARD[x][y] = USERSYMBOL.ToString();
+                   && (x >= 0 && y >= 0 && x < BOARD_SIZE && y < BOARD_SIZE) && BOARD[x][y] == EMPTYSYMBOL)
+                    BOARD[x][y] = USERSYMBOL;
                 else {
                     if (user_input == "quit") {
                         input = user_input;
@@ -162,7 +172,7 @@ namespace ticTacToe2 {
                     else if (/*res < 0*/ res == (int)Score.Loose)
                         EndGame(COMPUTERSYMBOL);
                     else
-                        EndGame("draw");
+                        EndGame(3);
                 }
             }
 
@@ -178,14 +188,14 @@ namespace ticTacToe2 {
                 }
                 else
                     TryWin();
-                var res = CheckEndGame();
+                var res = CheckEndGame();//reurn Score.loose (-100) if computer win
                 if (res != -3) {
-                    if (res > 0)
-                        EndGame(COMPUTERSYMBOL);
-                    else if (res < 0)
+                    if (res < 0)
+                        EndGame(COMPUTERSYMBOL); //get parameter who win
+                    else if (res > 0)
                         EndGame(USERSYMBOL);
                     else
-                        EndGame("draw");
+                        EndGame(3);
                 }
             }
 
@@ -202,7 +212,7 @@ namespace ticTacToe2 {
                 BOARD[move.x][move.y] = COMPUTERSYMBOL;
             }
 
-            private Move MiniMax(string[][] bOARD, int depth, string whosTurn) {
+            private Move MiniMax(int[][] bOARD, int depth, int whosTurn) {
                 MINMAXCOUNTER++;
                 if (MINMAXCOUNTER % 100000 == 0)
                     Console.Write("\rCalculation: {0}", MINMAXCOUNTER.ToString("N0"));
@@ -212,12 +222,12 @@ namespace ticTacToe2 {
                     //  if (whosTurn==COMPUTERSYMBOL)
                     return new Move(-5, -5, Score.Draw);
 
-                var checkEndGameResult = CheckEndGame();
+                var checkEndGameResult = CheckEndGame();//user view, computer win = loose(-100)
                 if (checkEndGameResult != -3) {
                     if (checkEndGameResult == (int)Score.Win)
-                        return new Move(-2, -2, Score.Win);
+                        return new Move(-2, -2, Score.Loose);//////////////////////////////
                     else if (checkEndGameResult == (int)Score.Loose)
-                        return new Move(-2, -2, Score.Loose);
+                        return new Move(-2, -2, Score.Win);//////////////////////////////////////
                     else if (checkEndGameResult == (int)Score.Draw)
                         return new Move(-2, -2, Score.Draw);
                 }
@@ -227,14 +237,14 @@ namespace ticTacToe2 {
                     best_move.score = Score.Loose;
                     for (var i = 0; i < BOARD.Length; i++) {
                         for (var j = 0; j < BOARD[i].Length; j++) {
-                            if (BOARD[i][j] == " ") {
+                            if (BOARD[i][j] == EMPTYSYMBOL) {
                                 BOARD[i][j] = COMPUTERSYMBOL;
                                 var temp_move = MiniMax(BOARD, depth + 1, USERSYMBOL);
                                 if ((int)temp_move.score >= (int)best_move.score) {
                                     best_move.score = temp_move.score;
                                     best_move.x = i; best_move.y = j;
                                 }
-                                BOARD[i][j] = " ";
+                                BOARD[i][j] = 0;
                                 if (best_move.score == Score.Win)
                                     return best_move;
                             }
@@ -248,14 +258,14 @@ namespace ticTacToe2 {
                     best_move.score = Score.Win;
                     for (var i = 0; i < BOARD.Length; i++) {
                         for (var j = 0; j < BOARD[i].Length; j++) {
-                            if (BOARD[i][j] == " ") {
+                            if (BOARD[i][j] == EMPTYSYMBOL) {
                                 BOARD[i][j] = USERSYMBOL;
                                 var temp_move = MiniMax(BOARD, depth + 1, COMPUTERSYMBOL);
                                 if (temp_move.score < best_move.score) {
                                     best_move.score = temp_move.score;
                                     best_move.x = i; best_move.y = j;
                                 }
-                                BOARD[i][j] = " ";
+                                BOARD[i][j] = 0;
                                 if (best_move.score == Score.Loose)
                                     return best_move;
                             }
@@ -270,7 +280,7 @@ namespace ticTacToe2 {
                 x = -1; y = -1;
                 for (var i = 0; i < BOARD.Length; i++) {
                     for (var j = 0; j < BOARD[i].Length; j++) {
-                        if (BOARD[i][j] == " ") {
+                        if (BOARD[i][j] == EMPTYSYMBOL) {
                             x = i; y = j;
                             counter++;
                         }
@@ -320,7 +330,7 @@ namespace ticTacToe2 {
             }
 
 
-            private bool CheckEndHorizontal(string XO, int length) {
+            private bool CheckEndHorizontal(int XO, int length) {
                 for (var i = 0; i < BOARD.Length; i++) {
                     if (CheckLineForStraight(BOARD[i], XO, length)) {
                         return true;
@@ -329,12 +339,14 @@ namespace ticTacToe2 {
                 return false;
             }
 
-            private bool CheckEndDiagonal(string XO, int length) {
+            private bool CheckEndDiagonal(int XO, int length) {
                 //right diagonal
                 //BOARD.Length - length to jump over all not possible diagonal
                 for (var i = 0; i <= BOARD.Length - length; i++) {
                     for (var j = 0; j <= BOARD[i].Length - length; j++) {
-                        var line = new string[BOARD_SIZE];
+                        var line = new int[BOARD_SIZE];
+                        for (var q = 0; q < line.Length; q++)
+                            line[q] = -1;
                         var counter = 0;
                         for (int k = i, l = j; k < BOARD.Length && l < BOARD[k].Length; k++, l++) {
                             line[counter] = BOARD[k][l];
@@ -351,7 +363,9 @@ namespace ticTacToe2 {
                     for (var j = 0; j < BOARD[i].Length; j++) {
                         if (j < (BOARD_SIZE - (BOARD_SIZE - length)) - 1)
                             continue;
-                        var line = new string[BOARD_SIZE];
+                        var line = new int[BOARD_SIZE];
+                        for (var q=0; q<line.Length; q++)
+                            line[q] = -1;
                         var counter = 0;
                         for (int k = i, l = j; k < BOARD.Length && l >= 0; k++, l--) {
                             line[counter] = BOARD[k][l];
@@ -364,7 +378,7 @@ namespace ticTacToe2 {
                 return false;
             }
 
-            public bool CheckHorizontal(ref int x, ref int y, string XO, int length) {
+            public bool CheckHorizontal(ref int x, ref int y, int XO, int length) {
                 for (var i = 0; i < BOARD.Length; i++) {
                     if (CheckLineForStraightNextTurn(BOARD[i], XO, length, ref y)) {
                         x = i;
@@ -374,9 +388,9 @@ namespace ticTacToe2 {
                 return false;
             }
 
-            private bool CheckLineForStraightNextTurn(string[] line, string XO, int length, ref int stepsX) {
+            private bool CheckLineForStraightNextTurn(int[] line, int XO, int length, ref int stepsX) {
                 for (var i = 0; i < line.Length; i++) {
-                    if (line[i] == " ") {
+                    if (line[i] == EMPTYSYMBOL) {
                         line[i] = XO;
                         var counter = 0;
                         for (var j = 0; j < line.Length; j++) {
@@ -385,18 +399,18 @@ namespace ticTacToe2 {
                             else
                                 counter = 0;
                             if (counter == length) {
-                                line[i] = " ";
+                                line[i] = 0;
                                 stepsX = i;
                                 return true;
                             }
                         }
-                        line[i] = " ";
+                        line[i] = EMPTYSYMBOL;
                     }
                 }
                 return false;
             }
 
-            private bool CheckLineForStraight(string[] line, string XO, int length) {
+            private bool CheckLineForStraight(int[] line, int XO, int length) {
                 var total = 0;
                 var biggest_total = 0;
                 if (line.Length < length)
@@ -416,8 +430,10 @@ namespace ticTacToe2 {
                 return false;
             }
 
-            private bool CheckEndVertical(string XO, int length) {
-                string[] line = new string[BOARD_SIZE];
+            private bool CheckEndVertical(int XO, int length) {
+                var line = new int[BOARD_SIZE];
+                for (var q = 0; q < line.Length; q++)
+                    line[q] = -1;
                 for (var i = 0; i < BOARD.Length; i++) {
                     var counter = 0;
                     for (var j = 0; j < BOARD[i].Length; j++) {
@@ -431,8 +447,10 @@ namespace ticTacToe2 {
                 return false;
             }
 
-            public bool CheckVertical(ref int x, ref int y, string XO, int length) {
-                string[] line = new string[BOARD_SIZE];
+            public bool CheckVertical(ref int x, ref int y, int XO, int length) {
+                var line = new int[BOARD_SIZE];
+                for (var q = 0; q < line.Length; q++)
+                    line[q] = -1;
                 for (var i = 0; i < BOARD.Length; i++) {
                     var counter = 0;
                     for (var j = 0; j < BOARD[i].Length; j++) {
@@ -447,12 +465,16 @@ namespace ticTacToe2 {
                 return false;
             }
 
-            public bool CheckDiagonal(ref int x, ref int y, string XO, int length) {
+            public bool CheckDiagonal(ref int x, ref int y, int XO, int length) {
                 //right diagonal
-                for (var i = 0; i < BOARD.Length; i++) {
-                    for (var j = 0; j < BOARD[i].Length; j++) {
+                for (var i = 0; i <= BOARD.Length - length; i++) {
+                    for (var j = 0; j <= BOARD[i].Length - length; j++) {
+                        // for (var i = 0; i < BOARD.Length; i++) {
+                        //    for (var j = 0; j < BOARD[i].Length; j++) {
                         var counter = 0;
-                        string[] line = new string[BOARD_SIZE];
+                        var line = new int[BOARD_SIZE];
+                        for (var q = 0; q < line.Length; q++)
+                            line[q] = -1;
                         for (int k = i, l = j; k < BOARD.Length && l < BOARD[k].Length; k++, l++) {
                             line[counter] = BOARD[k][l];
                             counter++;
@@ -467,10 +489,16 @@ namespace ticTacToe2 {
                     }
                 }
                 //left diagonal
-                for (var i = 0; i < BOARD.Length; i++) {
+                //     for (var i = 0; i < BOARD.Length; i++) {
+                //     for (var j = 0; j < BOARD[i].Length; j++) {
+                for (var i = 0; i <= BOARD.Length - length; i++) {
                     for (var j = 0; j < BOARD[i].Length; j++) {
+                        if (j < (BOARD_SIZE - (BOARD_SIZE - length)) - 1)
+                            continue;
                         var counter = 0;
-                        string[] line = new string[BOARD_SIZE];
+                        var line = new int[BOARD_SIZE];
+                        for (var q = 0; q < line.Length; q++)
+                            line[q] = -1;
                         for (int k = i, l = j; k < BOARD.Length && l >= 0; k++, l--) {
                             line[counter] = BOARD[k][l];
                             counter++;
